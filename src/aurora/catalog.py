@@ -24,5 +24,10 @@ def area_fees() -> Mapping[str, float]:
 
 
 @lru_cache(maxsize=1)
+def area_names() -> Mapping[str, str]:
+    return MappingProxyType({area["id"]: area["nome"] for area in load_json("areas.json")})
+
+
+@lru_cache(maxsize=1)
 def apartment_numbers() -> frozenset[str]:
     return frozenset(apartment["numero"] for apartment in load_json("apartamentos.json"))

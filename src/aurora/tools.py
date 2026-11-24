@@ -55,9 +55,21 @@ def _area_date_refusal(area: Any, data: Any) -> Result | None:
     return None
 
 
-def reservation_requires_confirmation(area: str, data: str, tool_context: ToolContext) -> bool:
-    """Depends only on the immutable fee, because ADK evaluates it again on resume."""
-    return area_fees().get(area, 0) > 0
+def reservation_requires_confirmation(
+    tool_context: ToolContext, area: Any = None, data: Any = None
+) -> bool:
+    """Depends only on immutable arguments and fee, because ADK evaluates it again on resume.
+
+    ADK calls it before checking mandatory arguments, so it must accept any input.
+    """
+    return _is_valid_area(area) and _is_valid_date(data) and area_fees()[area] > 0
+
+
+def visitor_requires_confirmation(
+    tool_context: ToolContext, nome: Any = None, data: Any = None
+) -> bool:
+    """Depends only on immutable arguments and accepts any input, like the rule above."""
+    return isinstance(nome, str) and bool(nome.strip()) and _is_valid_date(data)
 
 
 async def consultar_disponibilidade(
@@ -185,5 +197,5 @@ RESERVATION_TOOLS = [
 ]
 VISITOR_TOOLS = [
     FunctionTool(listar_meus_visitantes),
-    FunctionTool(autorizar_visitante, require_confirmation=True),
+    FunctionTool(autorizar_visitante, require_confirmation=visitor_requires_confirmation),
 ]
